@@ -65,3 +65,4 @@ gem 'elasticsearch-model'
 gem 'elasticsearch-rails'
 gem "sidekiq", "~> 7.1"
 gem "sidekiq-scheduler", "~> 5.0"
+gem "searchkick"
