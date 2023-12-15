@@ -3,7 +3,6 @@ services:
   db:
     image: postgres:15.1
     volumes:
-      # - ./tmp/db:/var/lib/postgresql/data
       - "postgres:/data/postgres"
     environment:
       POSTGRES_PASSWORD: password
@@ -11,13 +10,6 @@ services:
       PGDATA: /data/postgres
     ports:
       - "6543:5432"
-
-  mongo:
-    image: mongo:4.4.3
-    volumes:
-      - ./tmp/mongodata:/data/db/data
-    ports:
-      - "27017:27017"
 
   redis:
     image: 'redis:7.0.8'
@@ -34,7 +26,7 @@ services:
     build: .
     command: bundle exec sidekiq -C ./config/sidekiq.yaml
     volumes:
-      - '.:/scratch'
+      - '.:/elastic-products'
       - .:/tmp/sidekiq' # don't mount tmp directory
     environment:
       - REDIS_URL_SIDEKIQ=redis://redis:6379/1
@@ -43,16 +35,31 @@ services:
     build: .
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
-      - .:/scratch
+      - .:/elastic-products
     ports:
       - "3000:3000"
     depends_on:
       - db
-      # - mongo
       - redis
+      - elasticsearch
     environment:
       - REDIS_URL_SIDEKIQ=redis://redis:6379/1
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.16
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.16
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
 volumes:
   redis:
   postgres:

@@ -15,7 +15,7 @@ migrate:
 	docker-compose run server rake db:migrate
 
 rollback_one_step:
-		docker-compose run server rake db:rollback STEP=1
+	docker-compose run server rake db:rollback STEP=1
 
 seed:
 	make mongo-up && docker-compose run server rake db:seed
@@ -36,7 +36,7 @@ setup:
 	make build install build-db
 
 down-rmi:
-	docker-compose down && docker rmi scratch_server_server --force
+	docker-compose down && docker rmi elastic-products_server_server --force
 
 rmi-mongo:
 	docker rmi mongo --force
