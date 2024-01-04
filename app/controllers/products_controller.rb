@@ -6,11 +6,18 @@ class ProductsController < ApplicationController
   end
 
   def index
-    @products = Product.search(
-      params[:q],
-      where: filter_params,
-      order: order_params
-    )
+    @products = if params[:q].present?
+                  Product.search(
+                    params[:q],
+                    where: filter_params,
+                    order: order_params
+                  )
+                else
+                  Product.search(
+                    where: filter_params,
+                    order: order_params
+                  )
+                end
 
     render json: @products
   end
@@ -25,6 +32,7 @@ class ProductsController < ApplicationController
     filters = {}
     
     filters[:type] = params[:category].split(',') if params[:category].present?
+    filters[:brand] = params[:brand].split(',') if params[:brand].present?
     filters[:sizes] = params[:sizes].split(',') if params[:sizes].present?
     filters[:colors] = params[:colors].split(',') if params[:colors].present?
     filters[:tags] = params[:tags].split(',') if params[:tags].present?
