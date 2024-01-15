@@ -6,19 +6,40 @@ class ProductsController < ApplicationController
   end
 
   def index
+    page = (params[:page] || 1).to_i
+
     @products = if params[:q].present?
                   Product.search(
                     params[:q],
                     where: filter_params,
-                    order: order_params
+                    order: order_params,
+                    page: page, per_page: 20
                   )
                 else
                   Product.search(
                     where: filter_params,
-                    order: order_params
+                    order: order_params,
+                    page: page, per_page: 20
                   )
                 end
 
+    render json: @products
+  end
+
+  def autocomplete
+    render json: Product.search(
+                    params[:q],
+                    fields: [:name, :brand],
+                    match: :word_start,
+                    limit: 10,
+                    load: false,
+                    misspellings: { below: 5 }
+                  )
+  end
+
+  def suggestion
+    @products = Product.search(params[:q], suggest: true)
+    
     render json: @products
   end
 
@@ -31,7 +52,7 @@ class ProductsController < ApplicationController
   def filter_params
     filters = {}
     
-    filters[:type] = params[:category].split(',') if params[:category].present?
+    filters[:category] = params[:category].split(',') if params[:category].present?
     filters[:brand] = params[:brand].split(',') if params[:brand].present?
     filters[:sizes] = params[:sizes].split(',') if params[:sizes].present?
     filters[:colors] = params[:colors].split(',') if params[:colors].present?

@@ -1,7 +1,7 @@
 class Product < ApplicationRecord
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
-  searchkick
+  searchkick word_start: [:name, :brand], suggest: [:name]
 
   serialize :sizes, Array
   serialize :colors, Array
@@ -36,6 +36,8 @@ class Product < ApplicationRecord
       price: price
     }
   end
+
+
 
   def as_json(options = {})
     super(
