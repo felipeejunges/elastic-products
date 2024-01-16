@@ -7,19 +7,20 @@ class ProductsController < ApplicationController
 
   def index
     page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 20).to_i
 
     @products = if params[:q].present?
                   Product.search(
                     params[:q],
                     where: filter_params,
                     order: order_params,
-                    page: page, per_page: 20
+                    page: page, per_page: per_page
                   )
                 else
                   Product.search(
                     where: filter_params,
                     order: order_params,
-                    page: page, per_page: 20
+                    page: page, per_page: per_page
                   )
                 end
 
@@ -34,13 +35,13 @@ class ProductsController < ApplicationController
                     limit: 10,
                     load: false,
                     misspellings: { below: 5 }
-                  )
+                  ).map {|p| { brand: p.brand, name: p.name } }
   end
 
   def suggestion
-    @products = Product.search(params[:q], suggest: true)
+    @suggestions = Product.search(params[:q], suggest: true).suggestions
     
-    render json: @products
+    render json: @suggestions
   end
 
   private
